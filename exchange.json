@@ -1,4 +1,8 @@
 {
-  "dependencies": [],
-  "name": "raml"
+  "name": "Podcast API",
+  "assetId": "podcast-api",
+  "version": "1.0",
+  "groupId": "0e8be83d-6598-4b68-92d7-c25adc638997",
+  "main": "podcast-api.raml", 
+  "apiSpecVersion": "RAML 1.0"
 }
