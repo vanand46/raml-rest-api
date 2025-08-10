@@ -1,0 +1,23 @@
+#%RAML 1.0 DataType
+type: object
+properties:
+  id:
+    type: integer
+    description: The server-generated unique identifier for the podcast.
+    required: true
+  title:
+    type: string
+    description: The title of the podcast.
+    required: true
+  feed:
+    type: string
+    description: The RSS feed URL for the podcast.
+    required: true
+  author:
+    type: string
+    description: The author or publisher of the podcast.
+    required: false
+  summary:
+    type: string
+    description: A brief summary of the podcast's content.
+    required: true

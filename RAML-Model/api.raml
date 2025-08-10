@@ -1,0 +1,107 @@
+#%RAML 1.0
+title: Podcast API
+version: v1
+description: A simple API to manage podcasts and customers.
+baseUri: http://localhost:8081/{version}
+
+types:
+  Podcast:  !include types/Podcast.raml
+  Customer: !include types/Customer.raml
+  Message:  !include types/Message.raml
+
+/podcasts:
+  displayName: Podcasts
+  get:
+    description: Retrieve a list of all podcasts.
+    responses:
+      200:
+        body:
+          application/json:
+            type: Podcast[]
+  post:
+    description: Create a new podcast. The server will generate the ID.
+    body:
+      application/json:
+        type: |
+          (Podcast) - id
+        example:
+          title: "New Awesome Podcast"
+          feed: "https://awesome.com/feed.xml"
+          summary: "Everything you need to know about being awesome."
+    responses:
+      201:
+        description: The podcast was created successfully.
+        body:
+          application/json:
+            type: Message
+            example:
+              message: "Podcast created successfully"
+              id: 103
+
+  /{id}:
+    uriParameters:
+      id:
+        type: integer
+        description: The unique ID of the podcast to retrieve.
+    get:
+      description: Retrieve a single podcast by its ID.
+      responses:
+        200:
+          body:
+            application/json:
+              type: Podcast
+    put:
+      description: Update an existing podcast by its ID.
+      body:
+        application/json:
+          type: Podcast
+          example:
+            id: 101
+            title: "Syntax FM - The Updated Show"
+            feed: "https://feed.syntax.fm/rss"
+            author: "Wes Bos & Scott Tolinski"
+            summary: "A tasty treats podcast for Web Developers. Now updated!"
+      responses:
+        200:
+          body:
+            application/json:
+              type: Message
+              example:
+                message: "Podcast 101 was updated successfully."
+
+/customers:
+  displayName: Customers
+  get:
+    description: Retrieve a list of all customers.
+    responses:
+      200:
+        body:
+          application/json:
+            type: Customer[]
+  post:
+    description: Create a new customer. The server will generate the ID.
+    body:
+      application/json:
+        type: |
+          (Customer) - id
+        example:
+          firstName: "Jane"
+          lastName: "Doe"
+          email: "jane.doe@example.com"
+    responses:
+      201:
+        description: The customer was created successfully.
+        body:
+          application/json:          
+  /{id}:
+    uriParameters:
+      id:
+        type: integer
+        description: The unique ID of the customer.
+    get:
+      description: Retrieve a single customer by their ID.
+      responses:
+        200:
+          body:
+            application/json:
+              type: Customer
