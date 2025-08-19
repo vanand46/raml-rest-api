@@ -21,4 +21,5 @@ export const handleValidationAndCreateCustomer = (req: Request, res: Response, n
 
     req.customer = customer;
 
+    next();
 };
