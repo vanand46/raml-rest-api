@@ -1,22 +1,21 @@
-import { Request, Response } from 'express';
-import { Customer } from '../modelClasses/customer';
+import { Request, Response, NextFunction } from 'express';
+import * as customerService from '../services/customer.service';
 
-const customerDB = new Map<number, Customer>();
-let idCounter = 0;
+export const createCustomer = (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { firstName, lastName, email } = req.body;
+        const newCustomer = customerService.createNewCustomer({ firstName, lastName, email });
+        res.status(201).json(newCustomer);
+    } catch (error) {
+        next(error); // Pass errors to the central error handler
+    }
+};
 
-
-/**
- * @desc    Create a new customer
- */
-export const createCustomer = (req: Request, res: Response) => {
-    const newCustomer = req.customer!;
-
-    idCounter++;
-    newCustomer.id = idCounter;
-    customerDB.set(newCustomer.id, newCustomer);
-
-    console.log('Customer created:', newCustomer);
-    console.log('Current Database State:', Array.from(customerDB.values()));
-
-    res.status(201).json(newCustomer);
-}
+export const getCustomers = (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const allCustomers = customerService.findAllCustomers();
+        res.status(200).json(allCustomers);
+    } catch (error) {
+        next(error);
+    }
+};
