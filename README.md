@@ -1,3 +1,4 @@
+
 # RAML-REST-API
 
 A sample project demonstrating REST principles with a production-grade setup using Node.js, Express.js, and TypeScript.
@@ -13,8 +14,9 @@ This repository provides a scalable and maintainable structure for building REST
 - **Production-Ready Scripts:** Scripts for development (with auto-reload), building, and running in production.
 - **Environment-Based Configuration:** Securely manages configuration using `.env` files.
 - **Centralized Error Handling:** A single middleware to catch and process all errors gracefully.
-- **Validation:** Built-in DTOs and validation middleware for incoming requests.
+- **Validation:** Built-in DTOs and validation middleware for incoming requests, including support for partial updates.
 - **Security:** Basic security headers provided by `helmet`.
+- **RESTful Methods:** Full support for `GET`, `POST`, `PUT`, and `DELETE`.
 
 ## Prerequisites
 
@@ -45,8 +47,8 @@ This repository provides a scalable and maintainable structure for building REST
 
 ## Running the Application
 
-- **Development Mode:**
-    Starts the server with `ts-node-dev` for live reloading on file changes.
+- **Development Mode:**  
+  Starts the server with `ts-node-dev` for live reloading on file changes.
 
     ```bash
     npm run dev
@@ -54,8 +56,8 @@ This repository provides a scalable and maintainable structure for building REST
 
     The server will be available at `http://localhost:3000`.
 
-- **Production Mode:**
-    First, build the TypeScript code into JavaScript, then run the compiled code.
+- **Production Mode:**  
+  First, build the TypeScript code into JavaScript, then run the compiled code.
 
     ```bash
     # 1. Build the project
@@ -69,11 +71,13 @@ This repository provides a scalable and maintainable structure for building REST
 
 All endpoints are prefixed with `/api`.
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/` | Checks if the API is running. |
-| `POST` | `/customers` | Creates a new customer. |
-| `GET` | `/customers` | Retrieves a list of all customers. |
+| Method   | Endpoint            | Description                        |
+|----------|---------------------|------------------------------------|
+| `GET`    | `/`                 | Checks if the API is running.      |
+| `POST`   | `/customers`        | Creates a new customer.            |
+| `GET`    | `/customers`        | Retrieves a list of all customers. |
+| `PUT`    | `/customers/:id`    | Fully updates a customer.          |
+| `DELETE` | `/customers/:id`    | Deletes a customer.                |
 
 ## REST Principles Covered
 
@@ -92,8 +96,17 @@ All endpoints are prefixed with `/api`.
 ### 3. Uniform Interface
 
 - **Resource URIs:** `/api/customers`, `/api/customers/:id`
-- **Standard Methods:** `GET`, `POST` with JSON payloads.
-- **Self-descriptive Messages:** Uses standard status codes and `Content-Type` headers.
+- **Standard Methods:** `GET`, `POST`, `PUT`, `PATCH`, `DELETE` with JSON payloads.
+- **Self-descriptive Messages:**  
+  Responses use `res.json()` to return structured, readable data in `application/json` format. Each response includes:
+  - Clear status codes (`200`, `201`, `400`, `404`, `500`, etc.)
+  - Informative messages or data payloads
+  - Proper headers like `Content-Type: application/json`
+
+  Example:
+  ```ts
+  res.status(200).json({ message: 'Customer updated successfully', data: updatedCustomer });
+  ```
 
 ### 4. Layered System
 
@@ -102,13 +115,13 @@ All endpoints are prefixed with `/api`.
 
 ## Summary Table
 
-| REST Principle | Status | How It's Implemented in Your Project |
-| :--- | :--- | :--- |
-| **Client-Server** | ✅ Implemented | Express acts as a standalone server, separate from any client. |
-| **Stateless** | ✅ Implemented | No client session data is stored on the server between requests. |
-| **Layered System** | ✅ Implemented | Code is layered (routes, controllers, services), and the architecture supports external intermediaries. |
-| **Uniform Interface** | | |
-| ↳ Resource URIs | ✅ Implemented | Noun-based URIs like `/api/customers` identify resources. |
-| ↳ Resource Manipulation | ✅ Implemented | Uses standard HTTP verbs (`GET`, `POST`, `PUT`, `DELETE`) and JSON representations. |
-| ↳ Self-Descriptive Messages| ✅ Partially Implemented | Uses HTTP status codes and `Content-Type` headers effectively. |
-| ↳ **HATEOAS** | ❌ **Not Implemented** | Responses do not contain hypermedia links for discovering other actions/resources. |
+| REST Principle           | Status              | How It's Implemented in Your Project                                  |
+|--------------------------|---------------------|------------------------------------------------------------------------|
+| **Client-Server**        | ✅ Implemented       | Express acts as a standalone server, separate from any client.         |
+| **Stateless**            | ✅ Implemented       | No client session data is stored on the server between requests.       |
+| **Layered System**       | ✅ Implemented       | Code is layered (routes, controllers, services), supports intermediaries. |
+| **Uniform Interface**    | ✅ Implemented       | Standard HTTP verbs and JSON payloads used across well-defined URIs.   |
+| ↳ Resource URIs          | ✅ Implemented       | Noun-based URIs like `/api/customers` identify resources.              |
+| ↳ Resource Manipulation  | ✅ Implemented       | Uses `GET`, `POST`, `PUT`, `PATCH`, `DELETE` for CRUD operations.      |
+| ↳ Self-Descriptive Msgs  | ✅ Implemented       | Uses `res.json()` with status codes and headers like `Content-Type`.   |
+| ↳ **HATEOAS**            | ❌ Not Implemented   | Responses do not contain hypermedia links for discovering other actions/resources. |
