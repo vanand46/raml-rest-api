@@ -109,6 +109,6 @@ All endpoints are prefixed with `/api`.
 | **Layered System** | ✅ Implemented | Code is layered (routes, controllers, services), and the architecture supports external intermediaries. |
 | **Uniform Interface** | | |
 | ↳ Resource URIs | ✅ Implemented | Noun-based URIs like `/api/customers` identify resources. |
-| ↳ Resource Manipulation | ✅ Implemented | Uses standard HTTP verbs (`GET`, `POST`) and JSON representations. |
+| ↳ Resource Manipulation | ✅ Implemented | Uses standard HTTP verbs (`GET`, `POST`, `PUT`, `DELETE`) and JSON representations. |
 | ↳ Self-Descriptive Messages| ✅ Partially Implemented | Uses HTTP status codes and `Content-Type` headers effectively. |
 | ↳ **HATEOAS** | ❌ **Not Implemented** | Responses do not contain hypermedia links for discovering other actions/resources. |
