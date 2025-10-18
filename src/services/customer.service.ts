@@ -1,61 +1,34 @@
 import { Customer } from "../entities/customer.entity";
+import { CustomerDAO } from "../dao/customer.dao";
 
-// In-memory database
-const customerDB = new Map<number, Customer>();
-let idCounter = 0;
+export class CustomerService {
+  constructor(private readonly customerDAO: CustomerDAO) { }
 
-export const createNewCustomer = (
-  customerData: Omit<Customer, "id">
-): Customer => {
-  idCounter++;
-  const newCustomer = new Customer(
-    customerData.firstName,
-    customerData.lastName,
-    customerData.email
-  );
-  newCustomer.id = idCounter;
-  customerDB.set(newCustomer.id, newCustomer);
-  console.log("Current Database State:", Array.from(customerDB.values()));
-  return newCustomer;
-};
+  createCustomer(data: Omit<Customer, "id">): Customer {
+    const allCustomers = this.customerDAO.findAll();
+    const duplicate = allCustomers.find(c => c.email === data.email);
 
-export const updateCustomerById = (
-  id: number,
-  updateData: Partial<Omit<Customer, "id">>
-): Customer | null => {
-  const existingCustomer = customerDB.get(id);
+    if(duplicate) {
+      throw new Error("Email already exists");
+    }
 
-  if (!existingCustomer) {
-    return null;
+    return this.customerDAO.create(data);
   }
 
-  if (updateData.firstName !== undefined) {
-    existingCustomer.firstName = updateData.firstName;
-  }
-  if (updateData.lastName !== undefined) {
-    existingCustomer.lastName = updateData.lastName;
-  }
-  if (updateData.email !== undefined) {
-    existingCustomer.email = updateData.email;
+  updateCustomer(id: number, data: Partial<Omit<Customer, "id">>): Customer | null {
+    return this.customerDAO.update(id, data);
   }
 
-  customerDB.set(id, existingCustomer); // Save updated customer
-  return existingCustomer;
-};
-
-export const findAllCustomers = (): Customer[] => {
-  return Array.from(customerDB.values());
-};
-
-export const findCustomer = (id: number): Customer | null => {
-  const customer = customerDB.get(id);
-  if (!customer) {
-    return null;
+  getCustomers(): Customer[] {
+    return this.customerDAO.findAll();
   }
-  return customer;
-};
 
-export const deleteCustomerById = (id: number): boolean => {
-  return customerDB.delete(id);
-};
+  getCustomerById(id: number): Customer | null {
+    return this.customerDAO.findById(id);
+  }
+
+  deleteCustomer(id: number): boolean {
+    return this.customerDAO.delete(id);
+  }
+}
 

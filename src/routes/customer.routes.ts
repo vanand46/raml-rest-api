@@ -1,17 +1,37 @@
 import { Router, RequestHandler } from 'express';
-import * as customerController from '../controllers/customer.controller';
+import { CustomController } from '../controllers/customer.controller';
 import { createCustomerDto } from '../dto/create-customer.dto';
 import { handleValidation } from '../middlewares/validation.middleware';
 
 const router = Router();
+const customerController = new CustomController();
+
 
 const validateCustomer: RequestHandler[] = [...createCustomerDto, handleValidation];
 
 // Routes
-router.post('/', validateCustomer, customerController.createCustomer);
-router.put('/:id', validateCustomer, customerController.updateCustomer);
-router.get('/', customerController.getCustomers);
-router.get('/:id', customerController.getCustomer);
-router.delete('/:id', customerController.deleteCustomer);
+router.post(
+    '/',
+    validateCustomer,
+    customerController.create.bind(customerController)
+);
+router.put(
+    '/:id',
+    validateCustomer,
+    customerController.update.bind(customerController)
+);
+router.get(
+    '/',
+    customerController.getCustomers.bind(customerController),
+);
+router.get(
+    '/:id',
+    customerController.getCustomer.bind(customerController)
+);
+
+router.delete(
+    '/:id',
+    customerController.delete.bind(customerController),
+);
 
 export default router;
