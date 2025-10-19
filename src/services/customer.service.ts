@@ -1,14 +1,16 @@
+import { injectable, inject } from "tsyringe";
 import { Customer } from "../entities/customer.entity";
 import { CustomerDAO } from "../dao/customer.dao";
 
+@injectable()
 export class CustomerService {
-  constructor(private readonly customerDAO: CustomerDAO) { }
+  constructor(@inject(CustomerDAO) private customerDAO: CustomerDAO) { }
 
   createCustomer(data: Omit<Customer, "id">): Customer {
     const allCustomers = this.customerDAO.findAll();
     const duplicate = allCustomers.find(c => c.email === data.email);
 
-    if(duplicate) {
+    if (duplicate) {
       throw new Error("Email already exists");
     }
 

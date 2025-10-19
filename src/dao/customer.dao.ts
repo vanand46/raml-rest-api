@@ -1,5 +1,7 @@
+import { injectable } from "tsyringe";
 import { Customer } from "../entities/customer.entity";
 
+@injectable()
 export class CustomerDAO {
     private customerDB = new Map<number, Customer>();
     private idCounter = 0;
