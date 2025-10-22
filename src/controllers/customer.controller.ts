@@ -1,14 +1,17 @@
 import { Request, Response, NextFunction } from "express";
 import { autoInjectable } from "tsyringe";
 import { CustomerService } from "../services/customer.service";
-
+import { Controller } from "../decorators/controller.decorator";
+import { Get, Post, Put, Delete } from "../decorators/routes.decorator";
 
 @autoInjectable()
+@Controller("/customers")
 export class CustomController {
 
   constructor(private customerService?: CustomerService) { }
 
-  getCustomers = (req: Request, res: Response, next: NextFunction) => {
+  @Get("/")
+  getCustomers(req: Request, res: Response, next: NextFunction) {
     try {
       const customers = this.customerService!.getCustomers();
       res.status(201).json({ data: customers });
@@ -17,13 +20,15 @@ export class CustomController {
     }
   }
 
-  getCustomer = (req: Request, res: Response, next: NextFunction) => {
+  @Get("/:id")
+  getCustomer(req: Request, res: Response, next: NextFunction) {
     const customer = this.customerService!.getCustomerById(Number(req.params.id));
     if (!customer) return res.status(404).json({ message: "Customer not found" });
     res.json({ data: customer });
   }
 
-  create = (req: Request, res: Response, next: NextFunction) => {
+  @Post("/")
+  create(req: Request, res: Response, next: NextFunction) {
     try {
       const newCustomer = this.customerService!.createCustomer(req.body);
       res.status(201).json({ data: newCustomer });
@@ -32,7 +37,8 @@ export class CustomController {
     }
   }
 
-  update = (req: Request, res: Response, next: NextFunction) => {
+  @Put("/:id")
+  update(req: Request, res: Response, next: NextFunction) {
     try {
       const updated = this.customerService!.updateCustomer(Number(req.params.id), req.body);
       if (!updated) return res.status(404).json({ message: "Customer not found" });
@@ -42,7 +48,8 @@ export class CustomController {
     }
   }
 
-  delete = (req: Request, res: Response, next: NextFunction) => {
+  @Delete("/:id")
+  delete(req: Request, res: Response, next: NextFunction) {
     try {
       const deleted = this.customerService!.deleteCustomer(Number(req.params.id));
       if (!deleted) return res.status(404).json({ message: "Customer not found" });
