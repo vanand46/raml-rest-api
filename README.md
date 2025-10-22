@@ -1,127 +1,254 @@
 
-# RAML-REST-API
+# REST-API
 
-A sample project demonstrating REST principles with a production-grade setup using Node.js, Express.js, and TypeScript.
+A sample project demonstrating **REST principles** and a **multi-layered API architecture** using **Node.js**, **Express.js**, **TypeScript**, and **Dependency Injection** powered by [`tsyringe`](https://github.com/microsoft/tsyringe).
 
 ## Project Overview
 
-This repository provides a scalable and maintainable structure for building RESTful APIs. The goal is to showcase a strong foundation that can be extended with more complex features.
+This repository provides a **production-grade**, **scalable**, and **maintainable** foundation for building RESTful APIs following a **layered architecture** and **SOLID principles**.  
+
+The design follows three main layers, each mapped to a common enterprise pattern:
+
+| Layer | Design Pattern | Description |
+|-------|----------------|--------------|
+| **Experience API** | API Façade | Handles client requests, routes, and controllers. |
+| **Process API** | Service Layer Pattern | Contains business logic, orchestration, and process rules. |
+| **System API** | Data Access Object (DAO) Pattern | Encapsulates data persistence and integrates with data sources. |
+
+Each layer communicates **only with the layer directly beneath it**, ensuring modularity, reusability, and testability.
+
 
 ## Features
 
-- **Layered Architecture:** Clear separation between routing, controllers, business logic (services), and data models (entities).
-- **TypeScript:** Fully typed codebase for better maintainability and fewer runtime errors.
-- **Production-Ready Scripts:** Scripts for development (with auto-reload), building, and running in production.
-- **Environment-Based Configuration:** Securely manages configuration using `.env` files.
-- **Centralized Error Handling:** A single middleware to catch and process all errors gracefully.
-- **Validation:** Built-in DTOs and validation middleware for incoming requests, including support for partial updates.
-- **Security:** Basic security headers provided by `helmet`.
-- **RESTful Methods:** Full support for `GET`, `POST`, `PUT`, and `DELETE`.
+- **Layered Architecture:** Controllers, Services, and DAOs are clearly separated.
+- **Dependency Injection:** Implemented using [`tsyringe`](https://github.com/microsoft/tsyringe) for loose coupling and testability.
+- **Security:** Basic protection via `helmet` middleware.
+- **Validation:** DTO-based validation middleware for request data.
+- **Environment Configuration:** Managed via `.env` file.
+- **TypeScript:** Fully typed code for clarity and maintainability.
+- **Error Handling:** Centralized middleware for consistent error responses.
+- **RESTful Standards:** Uses standard HTTP methods, status codes, and JSON payloads.
+- **Production Ready:** Includes development and build scripts.
 
-## Prerequisites
+## Architecture Layers Explained
 
-- [Node.js](https://nodejs.org/) (v16 or newer recommended)
-- [npm](https://www.npmjs.com/) (comes with Node.js)
+### 1. Experience API Layer (API Façade)
+
+- Responsible for handling **HTTP requests** and **responses**.
+- Implemented using **Express routes** and **Controllers**.
+- Controllers are decorated with `@autoInjectable()` from `tsyringe` to enable automatic dependency injection.
+- Each controller delegates logic to its corresponding **service** layer.
+
+**Example:**
+```ts
+@autoInjectable()
+export class CustomerController {
+  constructor(private service?: CustomerService) {}
+
+  getAll(req: Request, res: Response) {
+    const customers = this.service?.findAll();
+    res.json(customers);
+  }
+}
+```
+
+### 2. Process API Layer (Services)
+
+* Implements **business logic**, **validation**, and **orchestration** between multiple DAOs or APIs.
+* Decorated with `@injectable()` to register it with the DI container.
+* Services interact only with **DAOs** and not with Express or HTTP concerns.
+
+**Example:**
+
+```ts
+@injectable()
+export class CustomerService {
+  constructor(@inject(CustomerDAO) private dao: CustomerDAO) {}
+
+  create(data: CreateCustomerDto) {
+    return this.dao.create(data);
+  }
+}
+```
+
+### 3. System API Layer (Data Access Object)
+
+* Encapsulates **database access** or **external system integration**.
+* Implements CRUD operations or data queries.
+* Provides abstraction so the business logic doesn’t depend on the persistence layer.
+* Also decorated with `@injectable()` for DI registration.
+
+**Example:**
+
+```ts
+@injectable()
+export class CustomerDAO {
+  private db = new Map<number, Customer>();
+  private idCounter = 0;
+
+  create(customer: Omit<Customer, "id">): Customer {
+    this.idCounter++;
+    const newCustomer = { id: this.idCounter, ...customer };
+    this.db.set(newCustomer.id, newCustomer);
+    return newCustomer;
+  }
+}
+```
+
+## Dependency Injection Setup
+
+This project uses **tsyringe** for dependency management.
+
+### Injection Chain:
+
+```
+Controller  →  Service  →  DAO
+(autoInjectable)   (injectable)   (injectable)
+```
+
+### Usage Rules:
+
+| Layer          | Decorator           | Purpose                                                        |
+| -------------- | ------------------- | -------------------------------------------------------------- |
+| **Controller** | `@autoInjectable()` | Automatically injects dependencies when instantiated manually. |
+| **Service**    | `@injectable()`     | Defines a DI-managed class that depends on other injectables.  |
+| **DAO**        | `@injectable()`     | Defines a DI-managed class for persistence access.             |
+
+The DI container automatically resolves dependencies at runtime, removing manual wiring.
+
+
+## Benefits of This Architecture
+
+* **Loose Coupling:** Layers depend on interfaces, not concrete implementations.
+* **High Testability:** You can easily mock DAOs or services in tests.
+* **Reusability:** Services and DAOs can be reused across multiple controllers or apps.
+* **Scalability:** Adding new business logic or endpoints doesn’t affect other layers.
+* **Maintainability:** Each layer focuses on one responsibility.
+* **Future Ready:** Can easily integrate new databases, queues, or microservices.
+
 
 ## Installation
 
 1. Clone the repository:
 
-    ```bash
-    git clone https://github.com/your-username/RAML-REST-API.git
-    cd RAML-REST-API
-    ```
+   ```bash
+   git clone https://github.com/your-username/RAML-REST-API.git
+   cd RAML-REST-API
+   ```
 
-2. Install the dependencies:
+2. Install dependencies:
 
-    ```bash
-    npm install
-    ```
+   ```bash
+   npm install
+   ```
 
-3. Create a `.env` file in the root of the project and add the following variables:
+3. Create a `.env` file:
 
-    ```env
-    PORT=3000
-    NODE_ENV=development
-    ```
+   ```env
+   PORT=3000
+   NODE_ENV=development
+   ```
 
 ## Running the Application
 
-- **Development Mode:**  
-  Starts the server with `ts-node-dev` for live reloading on file changes.
+### Development Mode
 
-    ```bash
-    npm run dev
-    ```
+Runs with live reload (`ts-node-dev`):
 
-    The server will be available at `http://localhost:3000`.
+```bash
+npm run dev
+```
 
-- **Production Mode:**  
-  First, build the TypeScript code into JavaScript, then run the compiled code.
+Server runs at:
+**[http://localhost:3000](http://localhost:3000)**
 
-    ```bash
-    # 1. Build the project
-    npm run build
+### Production Mode
 
-    # 2. Start the server
-    npm run start
-    ```
+Compile and run the project:
 
-## API Endpoints
+```bash
+npm run build
+npm start
+```
+
+## 📡 API Endpoints
 
 All endpoints are prefixed with `/api`.
 
-| Method   | Endpoint            | Description                        |
-|----------|---------------------|------------------------------------|
-| `GET`    | `/`                 | Checks if the API is running.      |
-| `POST`   | `/customers`        | Creates a new customer.            |
-| `GET`    | `/customers`        | Retrieves a list of all customers. |
-| `PUT`    | `/customers/:id`    | Fully updates a customer.          |
-| `DELETE` | `/customers/:id`    | Deletes a customer.                |
+| Method   | Endpoint         | Description                    |
+| -------- | ---------------- | ------------------------------ |
+| `GET`    | `/`              | Health check endpoint.         |
+| `POST`   | `/customers`     | Create a new customer.         |
+| `GET`    | `/customers`     | Retrieve all customers.        |
+| `GET`    | `/customers/:id` | Get a specific customer by ID. |
+| `PUT`    | `/customers/:id` | Update an existing customer.   |
+| `DELETE` | `/customers/:id` | Delete a customer.             |
 
-## REST Principles Covered
 
-### 1. Client-Server
+## REST Principles Summary
 
-- **Server:** Express app handles logic, data, and APIs.
-- **Client:** Any external app making HTTP requests.
-- Runs independently (`server.ts`), unaware of client UI/state.
+| REST Principle        | Status | Implementation                               |
+| --------------------- | ------ | -------------------------------------------- |
+| **Client–Server**     | ✅      | Express server independent from any client.  |
+| **Stateless**         | ✅      | Each request contains all necessary context. |
+| **Layered System**    | ✅      | DAO ↔ Service ↔ Controller separation.       |
+| **Uniform Interface** | ✅      | Standard HTTP verbs and JSON payloads.       |
+| **HATEOAS**           | ❌      | Not implemented yet (planned for future).    |
 
-### 2. Statelessness
 
-- Each request is self-contained.
-- No sessions, cookies, or shared state.
-- Example: `POST /api/customers` includes full customer data.
+## Project Structure
 
-### 3. Uniform Interface
+```
+src/
+ ├── controllers/       # Experience API Layer (API Façade)
+ │    └── customer.controller.ts
+ ├── services/          # Process API Layer (Business Logic)
+ │    └── customer.service.ts
+ ├── dao/               # System API Layer (Data Access)
+ │    └── customer.dao.ts
+ ├── routes/            # Express routes
+ ├── dto/               # Data Transfer Objects and validation rules
+ ├── entities/          # Entities/Models
+ ├── middlewares/       # Validation and error handling
+ ├── config/            # DI setup and environment configuration
+ ├── app.ts             # Express app initialization
+ └── server.ts          # Entry point
+```
 
-- **Resource URIs:** `/api/customers`, `/api/customers/:id`
-- **Standard Methods:** `GET`, `POST`, `PUT`, `PATCH`, `DELETE` with JSON payloads.
-- **Self-descriptive Messages:**  
-  Responses use `res.json()` to return structured, readable data in `application/json` format. Each response includes:
-  - Clear status codes (`200`, `201`, `400`, `404`, `500`, etc.)
-  - Informative messages or data payloads
-  - Proper headers like `Content-Type: application/json`
+## Future Improvements
 
-  Example:
-  ```ts
-  res.status(200).json({ message: 'Customer updated successfully', data: updatedCustomer });
-  ```
+* Add persistent database integration (PostgreSQL, MongoDB, etc.)
+* Implement HATEOAS for discoverable APIs.
+* Add request logging and tracing.
+* Introduce caching and repository pattern for performance.
+* Extend configuration with environment-based DI registration.
 
-### 4. Layered System
 
-- Internal structure: `routes/` → `controllers/` → `services/` → `entities/`
-- Clients only interact with the public endpoint (`http://localhost:3000`), allowing easy integration of proxies, gateways, or caching layers.
+## Architecture Diagram
 
-## Summary Table
-
-| REST Principle           | Status              | How It's Implemented in Your Project                                  |
-|--------------------------|---------------------|------------------------------------------------------------------------|
-| **Client-Server**        | ✅ Implemented       | Express acts as a standalone server, separate from any client.         |
-| **Stateless**            | ✅ Implemented       | No client session data is stored on the server between requests.       |
-| **Layered System**       | ✅ Implemented       | Code is layered (routes, controllers, services), supports intermediaries. |
-| **Uniform Interface**    | ✅ Implemented       | Standard HTTP verbs and JSON payloads used across well-defined URIs.   |
-| ↳ Resource URIs          | ✅ Implemented       | Noun-based URIs like `/api/customers` identify resources.              |
-| ↳ Resource Manipulation  | ✅ Implemented       | Uses `GET`, `POST`, `PUT`, `PATCH`, `DELETE` for CRUD operations.      |
-| ↳ Self-Descriptive Msgs  | ✅ Implemented       | Uses `res.json()` with status codes and headers like `Content-Type`.   |
-| ↳ **HATEOAS**            | ❌ Not Implemented   | Responses do not contain hypermedia links for discovering other actions/resources. |
+```text
+            ┌────────────────────┐
+            │   Client (UI/App)  │
+            └────────┬───────────┘
+                     │ HTTP
+                     ▼
+          ┌───────────────────────────┐
+          │ Experience API (Controller)│
+          │ - Handles routes           │
+          │ - Uses @autoInjectable()   │
+          └────────┬──────────────────┘
+                   │
+                   ▼
+          ┌───────────────────────────┐
+          │ Process API (Service)      │
+          │ - Business logic           │
+          │ - Uses @injectable()       │
+          └────────┬──────────────────┘
+                   │
+                   ▼
+          ┌───────────────────────────┐
+          │ System API (DAO)           │
+          │ - Data persistence layer   │
+          │ - Uses @injectable()       │
+          └───────────────────────────┘
+```
