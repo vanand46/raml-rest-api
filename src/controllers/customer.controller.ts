@@ -3,10 +3,13 @@ import { autoInjectable } from "tsyringe";
 import { CustomerService } from "../services/customer.service";
 import { Controller } from "../decorators/controller.decorator";
 import { Get, Post, Put, Delete } from "../decorators/routes.decorator";
+import { Use } from "../decorators/use.decorator";
+import { createCustomerDto } from "../dto/create-customer.dto";
+import { handleValidation } from "../middlewares/validation.middleware";
 
 @autoInjectable()
 @Controller("/customers")
-export class CustomController {
+export class CustomerController {
 
   constructor(private customerService?: CustomerService) { }
 
@@ -28,6 +31,7 @@ export class CustomController {
   }
 
   @Post("/")
+  @Use([...createCustomerDto, handleValidation])
   create(req: Request, res: Response, next: NextFunction) {
     try {
       const newCustomer = this.customerService!.createCustomer(req.body);
@@ -38,6 +42,7 @@ export class CustomController {
   }
 
   @Put("/:id")
+  @Use([...createCustomerDto, handleValidation])
   update(req: Request, res: Response, next: NextFunction) {
     try {
       const updated = this.customerService!.updateCustomer(Number(req.params.id), req.body);
