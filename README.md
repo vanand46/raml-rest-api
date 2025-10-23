@@ -3,9 +3,13 @@
 
 A sample project demonstrating **REST principles** and a **multi-layered API architecture** using **Node.js**, **Express.js**, **TypeScript**, and **Dependency Injection** powered by [`tsyringe`](https://github.com/microsoft/tsyringe).
 
+Now enhanced with **decorator-based routing**, **dependency injection**, and a clear **Process / System / Experience API** layering pattern.
+
 ## Project Overview
 
-This repository provides a **production-grade**, **scalable**, and **maintainable** foundation for building RESTful APIs following a **layered architecture** and **SOLID principles**.  
+This repository provides a **production-grade**, **scalable**, and **maintainable** foundation for building RESTful APIs following a **layered architecture** and **SOLID principles**. 
+
+The project uses **TypeScript decorators, dependency injection**, and **metadata reflection** to keep the code clean and organized — similar to frameworks like NestJS, but lightweight and fully Express-compatible.
 
 The design follows three main layers, each mapped to a common enterprise pattern:
 
@@ -35,22 +39,37 @@ Each layer communicates **only with the layer directly beneath it**, ensuring mo
 ### 1. Experience API Layer (API Façade)
 
 - Responsible for handling **HTTP requests** and **responses**.
-- Implemented using **Express routes** and **Controllers**.
+- Implemented using **Express routes(Using Decorators)** and **Controllers**.
 - Controllers are decorated with `@autoInjectable()` from `tsyringe` to enable automatic dependency injection.
 - Each controller delegates logic to its corresponding **service** layer.
 
 **Example:**
 ```ts
 @autoInjectable()
+@Controller("/customers")
 export class CustomerController {
   constructor(private service?: CustomerService) {}
 
+  @Get("/")
   getAll(req: Request, res: Response) {
     const customers = this.service?.findAll();
     res.json(customers);
   }
+
+  @Post("/")
+  @Use([...createCustomerDto, handleValidation])
+  create(req: Request, res: Response) {
+    const customer = this.service?.create(req.body);
+    res.status(201).json(customer);
+  }
 }
 ```
+
+Here:
+- `@Controller("/customers")` defines the base route prefix.
+- `@Get, @Post,` etc. define route methods.
+- `@Use()` attaches Express middlewares (like validation).
+- `@autoInjectable()` from **tsyringe** enables dependency injection.
 
 ### 2. Process API Layer (Services)
 
@@ -106,6 +125,12 @@ Controller  →  Service  →  DAO
 (autoInjectable)   (injectable)   (injectable)
 ```
 
+## Decorator System
+This project uses lightweight custom decorators to define routes, controllers, and middlewares declaratively.
+
+## Route Registration Utility
+Automatically reads metadata and registers controllers in Express.
+
 ### Usage Rules:
 
 | Layer          | Decorator           | Purpose                                                        |
@@ -115,6 +140,18 @@ Controller  →  Service  →  DAO
 | **DAO**        | `@injectable()`     | Defines a DI-managed class for persistence access.             |
 
 The DI container automatically resolves dependencies at runtime, removing manual wiring.
+
+
+## Features Summary
+| Feature                             | Description                                                                          |
+| ----------------------------------- | ------------------------------------------------------------------------------------ |
+| **Decorator-based routing**         | Controllers and routes defined declaratively using TypeScript decorators             |
+| **Dependency Injection (tsyringe)** | Services and DAOs injected automatically via `@injectable()` and `@autoInjectable()` |
+| **Layered architecture**            | Clear separation between Controller → Service → DAO                                  |
+| **Middleware support**              | Attach validation or auth middleware with `@Use()`                                   |
+| **TypeScript + Reflect Metadata**   | Enables runtime inspection for automatic route registration                          |
+| **Environment-based configuration** | `.env` for environment-specific variables                                            |
+| **REST principles**                 | Stateless, resource-based endpoints with JSON communication                          |
 
 
 ## Benefits of This Architecture
@@ -200,19 +237,25 @@ All endpoints are prefixed with `/api`.
 
 ```
 src/
- ├── controllers/       # Experience API Layer (API Façade)
- │    └── customer.controller.ts
- ├── services/          # Process API Layer (Business Logic)
- │    └── customer.service.ts
- ├── dao/               # System API Layer (Data Access)
- │    └── customer.dao.ts
- ├── routes/            # Express routes
- ├── dto/               # Data Transfer Objects and validation rules
- ├── entities/          # Entities/Models
- ├── middlewares/       # Validation and error handling
- ├── config/            # DI setup and environment configuration
- ├── app.ts             # Express app initialization
- └── server.ts          # Entry point
+├── app.ts
+├── controllers/
+│   └── customer.controller.ts
+├── services/
+│   └── customer.service.ts
+├── dao/
+│   └── customer.dao.ts
+├── decorators/
+│   ├── controller.decorator.ts
+│   ├── routes.decorator.ts
+│   └── use.decorator.ts
+├── dto/
+│   └── create-customer.dto.ts
+├── middlewares/
+│   └── validation.middleware.ts
+├── entities/
+│   └── customer.entity.ts
+└── utils/
+    └── router-loader.ts
 ```
 
 ## Future Improvements
@@ -222,6 +265,9 @@ src/
 * Add request logging and tracing.
 * Introduce caching and repository pattern for performance.
 * Extend configuration with environment-based DI registration.
+* Add `@Param(), @Body(), @Query()` parameter decorators
+* Extend metadata for role-based access control (@Auth('admin'))
+
 
 
 ## Architecture Diagram
