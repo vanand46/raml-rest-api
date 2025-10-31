@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import { registerControllers } from "./utils/router-loader";
 import { CustomerController } from "./controllers/customer.controller";
 import { errorHandler } from './middlewares/errorHandler.middleware';
+import { connectDB } from "./config/db.config";
 
 const app: Express = express();
 
@@ -19,6 +20,7 @@ const apiRouter = registerControllers([
     CustomerController
 ])
 app.use('/api', apiRouter);
+connectDB();
 
 // Central Error Handler
 app.use(errorHandler);
