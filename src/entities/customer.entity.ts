@@ -1,10 +1,25 @@
-export class Customer {
-    public id: number;
-    constructor(
-        public firstName: string,
-        public lastName: string,
-        public email: string
-    ) {
-        this.id = 0;
-    }
+import { Schema, model, Document } from "mongoose";
+
+export interface Customer {
+    firstName: string;
+    lastName: string;
+    email: string;
+    _id?: string;
 }
+
+export interface CustomerDocument extends Document {
+    firstName: string;
+    lastName: string;
+    email: string
+}
+
+const customerSchema = new Schema<CustomerDocument>(
+    {
+        firstName: { type: String, required: true },
+        lastName: { type: String, required: true },
+        email: { type: String, required: true, unique: true },
+    },
+    { timestamps: true }
+);
+
+export const CustomerModel = model<CustomerDocument>("Customer", customerSchema);

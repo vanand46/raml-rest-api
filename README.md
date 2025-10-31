@@ -13,11 +13,13 @@ The project uses **TypeScript decorators, dependency injection**, and **metadata
 
 The design follows three main layers, each mapped to a common enterprise pattern:
 
-| Layer | Design Pattern | Description |
-|-------|----------------|--------------|
-| **Experience API** | API Façade | Handles client requests, routes, and controllers. |
-| **Process API** | Service Layer Pattern | Contains business logic, orchestration, and process rules. |
-| **System API** | Data Access Object (DAO) Pattern | Encapsulates data persistence and integrates with data sources. |
+| Layer               | Design Pattern          | Responsibility                | Technologies                    |
+| ------------------- | ----------------------- | ----------------------------- | ------------------------------- |
+| **Experience API**  | API Façade              | HTTP routes, controllers      | Express + Decorators            |
+| **Process API**     | Service Layer           | Business logic, orchestration | TypeScript + tsyringe           |
+| **System API**      | DAO Layer               | Data abstraction              | TypeScript + Repository Pattern |
+| **Persistence API** | Persistence Abstraction | Database integration          | MongoDB + Mongoose (like JPA)   |
+
 
 Each layer communicates **only with the layer directly beneath it**, ensuring modularity, reusability, and testability.
 
