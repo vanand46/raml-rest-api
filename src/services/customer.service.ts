@@ -6,31 +6,25 @@ import { CustomerDAO } from "../dao/customer.dao";
 export class CustomerService {
   constructor(@inject(CustomerDAO) private customerDAO: CustomerDAO) { }
 
-  createCustomer(data: Omit<Customer, "id">): Customer {
-    const allCustomers = this.customerDAO.findAll();
-    const duplicate = allCustomers.find(c => c.email === data.email);
-
-    if (duplicate) {
-      throw new Error("Email already exists");
-    }
-
-    return this.customerDAO.create(data);
+  async createCustomer(data: Customer): Promise<Customer> {
+    return await this.customerDAO.create(data);
+  }
+ 
+  async getCustomers(): Promise<Customer[]> {
+    return await this.customerDAO.findAll();
   }
 
-  updateCustomer(id: number, data: Partial<Omit<Customer, "id">>): Customer | null {
-    return this.customerDAO.update(id, data);
+  async getCustomer(id: string): Promise<Customer | null> {
+    return await this.customerDAO.findById(id);
   }
 
-  getCustomers(): Customer[] {
-    return this.customerDAO.findAll();
+  async updateCustomer(id: string, data: Partial<Customer>): Promise<Customer | null> {
+    return await this.customerDAO.update(id, data);
   }
 
-  getCustomerById(id: number): Customer | null {
-    return this.customerDAO.findById(id);
+  async deleteCustomer(id: string): Promise<boolean> {
+    return await this.customerDAO.delete(id);
   }
 
-  deleteCustomer(id: number): boolean {
-    return this.customerDAO.delete(id);
-  }
 }
 

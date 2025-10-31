@@ -4,7 +4,7 @@ export interface Customer {
     firstName: string;
     lastName: string;
     email: string;
-    _id?: string;
+    id?: string;
 }
 
 export interface CustomerDocument extends Document {

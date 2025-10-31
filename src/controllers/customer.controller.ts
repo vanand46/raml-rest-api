@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { autoInjectable } from "tsyringe";
+import { autoInjectable, inject } from "tsyringe";
 import { CustomerService } from "../services/customer.service";
 import { Controller } from "../decorators/controller.decorator";
 import { Get, Post, Put, Delete } from "../decorators/routes.decorator";
@@ -11,12 +11,12 @@ import { handleValidation } from "../middlewares/validation.middleware";
 @Controller("/customers")
 export class CustomerController {
 
-  constructor(private customerService?: CustomerService) { }
+  constructor(@inject(CustomerService) private customerService: CustomerService) { }
 
   @Get("/")
-  getCustomers(req: Request, res: Response, next: NextFunction) {
+  async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const customers = this.customerService!.getCustomers();
+      const customers = await this.customerService.getCustomers();
       res.status(201).json({ data: customers });
     } catch (error) {
       next(error);
@@ -24,17 +24,17 @@ export class CustomerController {
   }
 
   @Get("/:id")
-  getCustomer(req: Request, res: Response, next: NextFunction) {
-    const customer = this.customerService!.getCustomerById(Number(req.params.id));
+  async getById(req: Request, res: Response, next: NextFunction) {
+    const customer = await this.customerService.getCustomer(req.params.id);
     if (!customer) return res.status(404).json({ message: "Customer not found" });
     res.json({ data: customer });
   }
 
   @Post("/")
   @Use([...createCustomerDto, handleValidation])
-  create(req: Request, res: Response, next: NextFunction) {
+  async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const newCustomer = this.customerService!.createCustomer(req.body);
+      const newCustomer = await this.customerService.createCustomer(req.body);
       res.status(201).json({ data: newCustomer });
     } catch (err) {
       next(err);
@@ -43,9 +43,9 @@ export class CustomerController {
 
   @Put("/:id")
   @Use([...createCustomerDto, handleValidation])
-  update(req: Request, res: Response, next: NextFunction) {
+  async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const updated = this.customerService!.updateCustomer(Number(req.params.id), req.body);
+      const updated = await this.customerService.updateCustomer(req.params.id, req.body);
       if (!updated) return res.status(404).json({ message: "Customer not found" });
       res.json({ data: updated });
     } catch (err) {
@@ -54,9 +54,9 @@ export class CustomerController {
   }
 
   @Delete("/:id")
-  delete(req: Request, res: Response, next: NextFunction) {
+  async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      const deleted = this.customerService!.deleteCustomer(Number(req.params.id));
+      const deleted = await this.customerService.deleteCustomer(req.params.id);
       if (!deleted) return res.status(404).json({ message: "Customer not found" });
       res.status(204).send();
     } catch (err) {
